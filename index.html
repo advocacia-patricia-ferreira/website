@@ -9,7 +9,7 @@
     <meta content="Free HTML Templates" name="description">
 
     <!-- 
-        Versão: 2.0.3
+        Versão: 2.0.4
         Última alteração: 24/04/2026
         Autor: Chaordium
     -->
@@ -562,6 +562,28 @@
                     }
                     el.setAttribute('data-processed', 'true');
                 }
+            });
+
+            // data-const-href → href + texto opcional
+            document.querySelectorAll('[data-const-href]:not([data-processed])').forEach(el => {
+                const url = CONSTANTS[el.getAttribute('data-const-href')];
+                if (url) el.href = url;
+
+                const textKey = el.getAttribute('data-const-text');
+                if (textKey) {
+                    const text = CONSTANTS[textKey];
+                    if (text) {
+                        // Atualiza só o nó de texto direto, preserva elementos filhos (botão, ícones)
+                        for (const node of el.childNodes) {
+                            if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
+                                node.textContent = text + '\u00A0\u00A0';
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                el.setAttribute('data-processed', 'true');
             });
 
             // data-const-text standalone (fora de mailto)
