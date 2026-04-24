@@ -9,7 +9,7 @@
     <meta content="Free HTML Templates" name="description">
 
     <!-- 
-        Versão: 2.0.2
+        Versão: 2.0.3
         Última alteração: 24/04/2026
         Autor: Chaordium
     -->
@@ -403,12 +403,15 @@
     <script src="lib/tempusdominus/js/moment.min.js"></script>
     <script src="lib/tempusdominus/js/moment-timezone.min.js"></script>
     <script src="lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js"></script>
+    <script src="js/main.js"></script>
 
     <!-- Template Javascript -->
 
-    <script src="js/main.js"></script>
-    <script type="module" src="./assets/js/constants.js"></script>
-    <script type="module" src="./assets/js/constants-loader.js"></script>
+    <!-- 
+        <script src="js/main.js"></script>
+        <script type="module" src="./assets/js/constants.js"></script>
+        <script type="module" src="./assets/js/constants-loader.js"></script> 
+    -->
 
     <!-- <script type="module" async src="./assets/js/constants-loader.js"></script> -->
 
@@ -514,6 +517,71 @@
         });
     </script>
 
+
+
+
+    <script type="module">
+        import { CONSTANTS, copyToClipboard, showToast, canUseClipboard } from './assets/js/constants.js';
+
+        async function loadPartial(id, url) {
+            try {
+                const res = await fetch(url);
+                if (!res.ok) throw new Error(`Não encontrado: ${url}`);
+                const html = await res.text();
+                document.getElementById(id).innerHTML = html;
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function applyConstants() {
+            // data-const → textContent
+            document.querySelectorAll('[data-const]:not([data-processed])').forEach(el => {
+                const val = CONSTANTS[el.getAttribute('data-const')];
+                if (val) { el.textContent = val; el.setAttribute('data-processed', 'true'); }
+            });
+
+            // data-const-href → href
+            document.querySelectorAll('[data-const-href]:not([data-processed])').forEach(el => {
+                const val = CONSTANTS[el.getAttribute('data-const-href')];
+                if (val) { el.href = val; el.setAttribute('data-processed', 'true'); }
+            });
+
+            // data-const-mailto → href + texto
+            document.querySelectorAll('[data-const-mailto]:not([data-processed])').forEach(el => {
+                const email = CONSTANTS[el.getAttribute('data-const-mailto')];
+                if (email) {
+                    el.href = `mailto:${email}`;
+                    const textKey = el.getAttribute('data-const-text');
+                    const text = textKey ? CONSTANTS[textKey] : email;
+                    // atualiza só o nó de texto, preserva ícones filhos
+                    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+                    let node;
+                    while (node = walker.nextNode()) {
+                        if (node.textContent.trim()) { node.textContent = text; break; }
+                    }
+                    el.setAttribute('data-processed', 'true');
+                }
+            });
+
+            // data-const-text standalone (fora de mailto)
+            document.querySelectorAll('[data-const-text]:not([data-const-mailto]):not([data-processed])').forEach(el => {
+                const val = CONSTANTS[el.getAttribute('data-const-text')];
+                if (val) { el.textContent = val; el.setAttribute('data-processed', 'true'); }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // 1. Carrega header e footer em paralelo
+            await Promise.all([
+                loadPartial('header-placeholder', './assets/header.html'),
+                loadPartial('footer-placeholder', './assets/footer.html')
+            ]);
+
+            // 2. SÓ AGORA aplica as constantes (header já está no DOM)
+            await applyConstants();
+        });
+    </script>
 </body>
 
 </html>
