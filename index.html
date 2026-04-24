@@ -9,7 +9,7 @@
     <meta content="Free HTML Templates" name="description">
 
     <!-- 
-        Versão: 2.0.4
+        Versão: 2.0.5
         Última alteração: 24/04/2026
         Autor: Chaordium
     -->
@@ -573,10 +573,9 @@
                 if (textKey) {
                     const text = CONSTANTS[textKey];
                     if (text) {
-                        // Atualiza só o nó de texto direto, preserva elementos filhos (botão, ícones)
                         for (const node of el.childNodes) {
-                            if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
-                                node.textContent = text + '\u00A0\u00A0';
+                            if (node.nodeType === Node.TEXT_NODE && node.textContent.includes('Carregando')) {
+                                node.textContent = ' ' + text + ' ';
                                 break;
                             }
                         }
